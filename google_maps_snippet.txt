@@ -1,0 +1,38 @@
+  <div id="map" style="width: 1000px; height: 600px;"></div>
+
+  <script type="text/javascript">
+    var locations = [
+	['San Diego', 32.7150, -117.1625],
+	['Los Angeles', 34.0500, -118.2500],
+	['New York', 40.7127, -74.0059],
+	['Miami', 25.7877, -80.2241],
+	['00000001 pages 1-249.pdf', 42.03842, -74.77766],
+	['00000001 pages 250-461.pdf', 30.47631, -87.27636],
+	['100-342146 Section 1 -6.PDF', 30.49353, -88.32667],
+	['kcmassacre052.pdf', 38.8965, -77.03859]
+	];
+
+    var map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 4,
+      center: new google.maps.LatLng(39.828127, -98.579404),
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+
+    var infowindow = new google.maps.InfoWindow();
+
+    var marker, i;
+
+    for (i = 0; i < locations.length; i++) {  
+      marker = new google.maps.Marker({
+        position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+        map: map
+      });
+
+      google.maps.event.addListener(marker, 'click', (function(marker, i) {
+        return function() {
+          infowindow.setContent(locations[i][0]);
+          infowindow.open(map, marker);
+        }
+      })(marker, i));
+    }
+  </script>

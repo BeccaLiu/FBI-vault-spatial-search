@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Solr Search</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDY0kkJiTPVd2U7aTOAwhc9ySH6oHxOIYM&sensor=true"> </script>
+		<script type="text/javascript">
+			function check() {
+				var addform = document.form1;
+				if (addform.title.value == "") {
+					alert("Please enter the Title!");
+					addform.title.focus();
+				}
+				else
+				makeRequest();
+			}
+			
+			
+			
+			var req = false;
+var json;
+
+var title;
+function makeRequest() {
+	if (window.XMLHttpRequest) {
+		try {
+			req = new XMLHttpRequest();
+		} catch(e) {
+			req = false;
+		}
+	} else {
+		if (window.ActiveXObject) {
+			try {
+				req = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (e) {
+			}
+		}
+	}
+	if (req) {
+	//alert( document.getElementById("title").value );
+		var url = "http://localhost:12345/solr/select?wt=json&indent=on&q=" + document.getElementById("title").value + "&rows=1000" ;
+		//		alert(url);
+		req.onreadystatechange = showContents;
+		req.open("GET", url, true);
+		req.setRequestHeader("Method", "GET" + url + "HTTP/1.1");
+		req.send(null);
+	} else {
+		document.getElementById("updateArea").innerHTML = "Sorry, but I couldn't create an XMLHttpRequest";
+	}
+}
+function showContents() {
+	var tableOutput = "";
+	if (req.readyState == 4) {
+		if (req.status == 200) {
+			tableOutput=req.responseText;
+			
+			json = eval("(" + req.responseText + ")");
+			list = json.response.docs;
+			var num=list.length;
+		//alert(num);
+		
+		var locations=[];
+		//['San Diego', 32.7150, -117.1625]
+		for (var i = 0; i < num; i++) {
+		var loc=[];
+		loc.push(list[i].id);
+		loc.push(list[i].lat);
+		loc.push(list[i].long);
+			
+			locations.push(loc);
+		}
+			
+		//locations+="]";
+		//alert(locations);
+	var map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 4,
+      center: new google.maps.LatLng(39.828127, -98.579404),
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+
+    var infowindow = new google.maps.InfoWindow();
+
+    var marker, i;
+
+    for (i = 0; i < locations.length; i++) {  
+  //   alert(locations[i][1]);
+//         alert(locations[i][2]);
+      marker = new google.maps.Marker({
+        position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+        map: map
+      });
+
+
+      google.maps.event.addListener(marker, 'click', (function(marker, i) {
+        return function() {
+          infowindow.setContent(locations[i][0]);
+          infowindow.open(map, marker);
+        }
+      })(marker, i));
+    }
+				
+			} else {
+				tableOutput = "<h1>" + document.getElementById("title").value + " does not exist!</h1>";
+				document.getElementById("updateArea").innerHTML = tableOutput;
+			}
+		} else {
+			
+		}
+	
+}
+
+		</script>
+
+		
+
+	</head>
+	<body>
+<center>
+
+		<h1>Solr Search</h1>
+
+<!--		<form name="form1" id="form1" method="post" action=  onsubmit="return check();">   -->
+			<form name="form1" id="form1" >
+			<div id=outline>
+				
+				<table >
+				<input id="title" type="text" value="" size="65" />
+			</table>
+				<input type="button" name="search" value="Submit" onclick="check()" />
+			</div>
+			</form>
+	
+			 <div id="map" style="width: 1000px; height: 600px;"></div>
+
+
+		<noscript>
+		</center>
+
+	</body>
+
